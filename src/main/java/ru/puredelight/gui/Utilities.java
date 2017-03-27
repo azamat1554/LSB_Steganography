@@ -10,10 +10,7 @@ import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.*;
 import java.awt.image.BufferedImage;
-import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
+import java.io.*;
 import java.util.Arrays;
 import java.util.BitSet;
 
@@ -36,6 +33,15 @@ public class Utilities {
     }
 
     public static BufferedImage getImage(File image) {
+        try {
+            return ImageIO.read(image);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+    }
+
+    public static BufferedImage getImage(InputStream image) {
         try {
             return ImageIO.read(image);
         } catch (IOException e) {

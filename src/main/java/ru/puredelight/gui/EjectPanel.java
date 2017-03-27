@@ -50,13 +50,8 @@ public class EjectPanel extends JPanel {
         saveImgBtn.setFont(font);
         saveImgBtn.setEnabled(false);
 
-        try {
-            secretImage = Utilities
-                    .getImage(new File(ClassLoader.getSystemResource("images/defaultImg.jpg").toURI()));
-
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
+        secretImage = Utilities.getImage(InjectPanel.class.getClassLoader()
+                .getResourceAsStream("images/defaultImg.jpg"));
 
         secretLbl.setHorizontalTextPosition(JLabel.CENTER);
         secretLbl.setVerticalTextPosition(JLabel.TOP);
@@ -107,9 +102,6 @@ public class EjectPanel extends JPanel {
                     secretLbl.setIcon(null);
                     secretLbl.setText("В контейнере содиржится файл с расширением: " + extension.substring(1));
                 }
-
-//                secretImage = Utilities.getImage(fileData); // new ImageIcon(imageData).getImage();
-//                secretLbl.setIcon(Utilities.getScaledImage(secretLbl, secretImage));
 
                 saveImgBtn.setEnabled(true);
             }

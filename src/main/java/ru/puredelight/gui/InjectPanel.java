@@ -10,9 +10,9 @@ import java.awt.*;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferByte;
 import java.io.File;
 import java.io.IOException;
-import java.net.URISyntaxException;
 
 import static ru.puredelight.gui.Utilities.setConstraints;
 
@@ -31,10 +31,11 @@ public class InjectPanel extends JPanel {
     private JButton estimateBtn;
     private JLabel sliderLbl;
     private JSlider slider;
+    private JLabel maxSizeLbl;
     private JFileChooser fileChooser;
 
     private BufferedImage defaultImage;
-    private BufferedImage originalImage;
+    private BufferedImage emptyImage;
     private BufferedImage fillImage;
     private File secretFile;
 
@@ -46,11 +47,12 @@ public class InjectPanel extends JPanel {
         secretLbl = new JLabel("Секретное изображение");
         fillImgLbl = new JLabel("Заполненный контейнер");
         sliderLbl = new JLabel("Кол-во заменяемых бит");
+        maxSizeLbl = new JLabel();
 
         loadImgBtn = new JButton("Выбрать контейнер");
         injectBtn = new JButton("Выбрать сообщение");
         saveImgBtn = new JButton("Сохранить");
-        estimateBtn = new JButton("Оценка качества");
+        estimateBtn = new JButton("Оценка качества встраивания");
 
         slider = new JSlider(JSlider.HORIZONTAL);
 
@@ -61,13 +63,10 @@ public class InjectPanel extends JPanel {
         addComponents();
         eventHandlers();
 
-        try {
+        defaultImage = Utilities.getImage(InjectPanel.class.getClassLoader()
+                .getResourceAsStream("images/defaultImg.jpg"));
 
-            defaultImage = Utilities.getImage(new File(ClassLoader.getSystemResource("images/defaultImg.jpg").toURI()));
-        } catch (URISyntaxException e) {
-            e.printStackTrace();
-        }
-        originalImage = defaultImage;
+        emptyImage = defaultImage;
         fillImage = defaultImage;
         secretFile = null;
     }
@@ -109,6 +108,8 @@ public class InjectPanel extends JPanel {
 
         sliderLbl.setHorizontalAlignment(JLabel.CENTER);
 
+        maxSizeLbl.setVisible(false);
+
         fileChooser.setMultiSelectionEnabled(false);
     }
 
@@ -118,17 +119,15 @@ public class InjectPanel extends JPanel {
         setLayout(gbag);
 
         gbc.fill = GridBagConstraints.BOTH;
+        gbc.insets = new Insets(2, 2, 2, 2);
 
-//        JPanel loadSavePnl = new JPanel(new FlowLayout(FlowLayout.CENTER));
         add(loadImgBtn, setConstraints(gbc, 0, 0, 1, 1, 0, 0));
         add(injectBtn, setConstraints(gbc, 1, 0, 1, 1, 0, 0));
         add(saveImgBtn, setConstraints(gbc, 2, 0, 1, 1, 0, 0));
         add(sliderLbl, setConstraints(gbc, 2, 1, 1, 1, 0, 0));
         add(slider, setConstraints(gbc, 2, 2, 1, 1, 0, 0));
+        add(maxSizeLbl, setConstraints(gbc, 0, 1, 1, 2, 0, 0));
 
-        //add components on EjectPanel
-        gbc.insets = new Insets(2, 2, 2, 2);
-//        add(loadSavePnl, setConstraints(gbc, 0, 0, 3, 1, 0, 0));
 
         add(emptyImgLbl, setConstraints(gbc, 0, 3, 1, 1, 1, 1));
         add(secretLbl, setConstraints(gbc, 1, 3, 1, 1, 1, 1));
@@ -143,20 +142,23 @@ public class InjectPanel extends JPanel {
 
             if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
                 File image = fileChooser.getSelectedFile();
-                originalImage = Utilities.getImage(image);
+                emptyImage = Utilities.getImage(image);
                 extension = Utilities.getExtension(image);
                 System.out.println(extension);
 
-                emptyImgLbl.setIcon(Utilities.getScaledImage(emptyImgLbl, originalImage));
+                emptyImgLbl.setIcon(Utilities.getScaledImage(emptyImgLbl, emptyImage));
 
                 injectBtn.setEnabled(true);
-                estimateBtn.setEnabled(false);
+                maxSizeLbl.setText("<html><p>Максимальный размер встраиваемого файла: " + maxSize() / 1024 + " Кбайт</p></html>");
+                maxSizeLbl.setVisible(true);
+
 
                 if (secretFile != null) {
-                    fillImage = new InjectHandler().inject(originalImage, secretFile, slider.getValue());
+                    fillImage = new InjectHandler().inject(emptyImage, secretFile, slider.getValue());
                     fillImgLbl.setIcon(Utilities.getScaledImage(emptyImgLbl, fillImage));
 
                     saveImgBtn.setEnabled(false);
+                    estimateBtn.setEnabled(false);
                 }
             }
         });
@@ -182,10 +184,9 @@ public class InjectPanel extends JPanel {
             if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
                 File file = fileChooser.getSelectedFile();
 
-                long maxSize = maxImageSize();
-                if (file.length() >= maxSize) {
+                if (file.length() >= maxSize()) {
                     JOptionPane.showMessageDialog(this,
-                            "Слишком большой файл, максимальный объём: " + maxSize / 1024 + " Кбайт");
+                            "Слишком большой файл");
                     return;
                 }
 
@@ -200,7 +201,7 @@ public class InjectPanel extends JPanel {
                     secretLbl.setText("<html>Секретный файл:<br><br><i>" + file.getName() + "</i></html>");
                 }
 
-                fillImage = new InjectHandler().inject(originalImage, file, slider.getValue());
+                fillImage = new InjectHandler().inject(emptyImage, file, slider.getValue());
                 fillImgLbl.setIcon(Utilities.getScaledImage(emptyImgLbl, fillImage));
 
                 saveImgBtn.setEnabled(true);
@@ -213,26 +214,31 @@ public class InjectPanel extends JPanel {
             if (!slider.getValueIsAdjusting()) {
                 if (secretFile == null) {
                     return;
-                } else if (secretFile.length() >= maxImageSize()) {
+                } else if (secretFile.length() >= maxSize()) {
                     JOptionPane.showMessageDialog(this,
                             "В контейнере недостаточно места, для внедрения");
                     slider.setValue(slider.getValue() + 1);
                     return;
                 }
 
-                fillImage = new InjectHandler().inject(originalImage, secretFile, slider.getValue());
+                fillImage = new InjectHandler().inject(emptyImage, secretFile, slider.getValue());
                 fillImgLbl.setIcon(Utilities.getScaledImage(emptyImgLbl, fillImage));
             }
         });
 
         estimateBtn.addActionListener(e -> {
+            byte[] emptyPixels = ((DataBufferByte) emptyImage.getRaster().getDataBuffer()).getData();
+            byte[] fillPixels = ((DataBufferByte) fillImage.getRaster().getDataBuffer()).getData();
 
+            JOptionPane.showMessageDialog(this,
+                    String.format("Среднеквадратическая погрешность: %.2f %%", MSE(emptyPixels, fillPixels))
+                            + String.format("\nОтношение сигнал/шум: %.2f дБ", SNR(emptyPixels, fillPixels)));
         });
 
         emptyImgLbl.addComponentListener(new ComponentAdapter() {
             @Override
             public void componentResized(ComponentEvent componentEvent) {
-                emptyImgLbl.setIcon(Utilities.getScaledImage(emptyImgLbl, originalImage));
+                emptyImgLbl.setIcon(Utilities.getScaledImage(emptyImgLbl, emptyImage));
             }
         });
 
@@ -254,12 +260,32 @@ public class InjectPanel extends JPanel {
         });
     }
 
+    public double MSE(byte[] emptyCont, byte[] fillCont) {
+        double result = 0;
+        int length = emptyCont.length;
+        for (int i = 0; i < length; i++) {
+            result += Math.pow(emptyCont[i] - fillCont[i], 2);
+        }
+        result = result / emptyCont.length;
+        return result;
+    }
+
+    public double SNR(byte[] emptyCont, byte[] fillCont) {
+        double divident = 0, divider = 0;
+        int length = emptyCont.length;
+        for (int i = 0; i < length; i++) {
+            divident += emptyCont[i] * emptyCont[i];
+            divider += Math.pow(emptyCont[i] - fillCont[i], 2);
+        }
+        return Math.log10(divident / divider); //Db
+    }
+
     /**
      * Максимальный размер, который можно встроить в контейнер в байтах.
      */
-    private long maxImageSize() {
-        return (long) ((originalImage.getWidth()
-                * originalImage.getHeight()
+    private long maxSize() {
+        return (long) ((emptyImage.getWidth()
+                * emptyImage.getHeight()
                 * slider.getValue()
                 * 3 - Config.HEADER_LENGTH * 8) / 8);
     }
