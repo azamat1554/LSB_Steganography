@@ -9,29 +9,42 @@ import java.nio.ByteBuffer;
 import java.util.BitSet;
 
 /**
- * Created by azamat on 3/18/17.
+ * Класс для обработки внедрения секретного содержимого
+ * в файл изображения.
+ *
+ * @author Azamat Abidokov
  */
 public class InjectHandler {
-    //указатель на текущую позицию в сообщении
+    //указатель на текущую позицию в секретном сообщении
     private int pointer;
     //биты встраиваемого сообщения
     private BitSet imageBits;
     //длина сообщения в битах
     private int length;
+    //кол-во бит для встраивания
     private int numberOfBit;
 
-    public BufferedImage inject(BufferedImage originalImage, File secretImage, int numberOfBit) {
+    /**
+     * Этот метод выполняет внедрение файла в изображение.
+     *
+     * @param originalImage Изображение, в которое нужно внедряеть файл
+     * @param secretFile    Файл, который нужно внедрить
+     * @param numberOfBit   Количество бит изображения, в которые внедряется файл
+     * @return Новое изображение, в которое внедрен секретный файл
+     */
+    public BufferedImage inject(BufferedImage originalImage, File secretFile, int numberOfBit) {
         pointer = 0;
         this.numberOfBit = 1;
+        //используется, чтобы обнулить биты для встраивания сообщения
         int mask = getMask(this.numberOfBit);
 
         //длина заголовка в битах
         int headerLength = Config.HEADER_LENGTH * 8;
         //длина заголовка + длина файла, в битах
-        int dataLength = (int) (headerLength + secretImage.length() * 8);
+        int dataLength = (int) (headerLength + secretFile.length() * 8);
         length = headerLength;
 
-        imageBits = getBits(secretImage, numberOfBit, dataLength);
+        imageBits = getBits(secretFile, numberOfBit, dataLength);
         BufferedImage fillImage = copyImage(originalImage);
 
         int width = originalImage.getWidth();
@@ -42,6 +55,9 @@ public class InjectHandler {
             for (int x = 0; x < width; x++) {
                 pixel = fillImage.getRGB(x, y);
 
+                /* получаем составляющие пикселя, и внедряем биты
+                 * секретного сообщения в каждую составляющую
+                 */
                 r = (pixel >> 16) & mask | nextBits();
                 g = (pixel >> 8) & mask | nextBits();
                 b = pixel & mask | nextBits();
@@ -49,7 +65,7 @@ public class InjectHandler {
                 newPixel = (0xFF000000 | r << 16 | g << 8 | b);
                 fillImage.setRGB(x, y, newPixel);
 
-                if (pointer == headerLength) {
+                if (pointer == headerLength) { //если заголовок записан, изменить параметры
                     length = dataLength;
                     this.numberOfBit = numberOfBit;
                     mask = getMask(numberOfBit);
@@ -58,12 +74,11 @@ public class InjectHandler {
                 }
             }
         }
-        System.out.println(pointer);
-        System.out.println(length);
 
         return fillImage;
     }
 
+    //Возвращает следующие биты сообщения, которые нужно внедрить
     private int nextBits() {
         if (pointer == length) return 0;
 
@@ -96,9 +111,6 @@ public class InjectHandler {
         imgBytes.put(Utilities.getBytes(secretImage, (int) secretImage.length()));
         imgBytes.position(0);
         return BitSet.valueOf(imgBytes);
-
-//        byte[] bytes = Utilities.getBytes(secretImage, (int) secretImage.length());
-//        imageBits = BitSet.valueOf(bytes);
     }
 
     private int getMask(int numberOfbit) {

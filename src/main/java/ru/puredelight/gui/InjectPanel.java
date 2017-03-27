@@ -44,7 +44,7 @@ public class InjectPanel extends JPanel {
 
     public InjectPanel() {
         emptyImgLbl = new JLabel("Пустой контейнер");
-        secretLbl = new JLabel("Секретное изображение");
+        secretLbl = new JLabel("Секрет");
         fillImgLbl = new JLabel("Заполненный контейнер");
         sliderLbl = new JLabel("Кол-во заменяемых бит");
         maxSizeLbl = new JLabel();
@@ -191,7 +191,7 @@ public class InjectPanel extends JPanel {
                 }
 
                 secretFile = file;
-                if (Utilities.supportImageType(file)) {
+                if (Utilities.supportImageType(file)) { //если секрет - изображение
                     secretIsImage = true;
                     secretLbl.setText("Секретное изображение");
                     secretLbl.setIcon(Utilities.getScaledImage(emptyImgLbl, Utilities.getImage(secretFile)));

@@ -1,17 +1,18 @@
 package ru.puredelight.handlers;
 
-import ru.puredelight.gui.Utilities;
-
 import java.awt.image.BufferedImage;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 import java.util.BitSet;
 
 /**
- * Created by azamat on 3/19/17.
+ * Класс для обработки извлечения секретного содержимого
+ * из файла изображения.
+ *
+ * @author Azamat Abidokov
  */
 public class EjectHandler {
-    //указатель на текущую позицию в сообщении
+    //указатель на текущую позицию в извлекаемом сообщении
     private int pointer;
     //биты извлекаемого сообщения
     private BitSet imageBits;
@@ -20,6 +21,12 @@ public class EjectHandler {
     //кол-во замененных бит
     private int numberOfBit;
 
+    /**
+     * Этот метод извлекает секретное содержимое из файла изображения
+     *
+     * @param fillImage Изображение с секретным содержимым
+     * @return Байты секретного файла
+     */
     public byte[] eject(BufferedImage fillImage) {
         pointer = 0;
         numberOfBit = 1;
@@ -41,23 +48,26 @@ public class EjectHandler {
                 extractBits(pixel >> 8 & 0xFF);
                 extractBits(pixel & 0xFF);
 
-                if (pointer == headerLength) {
+                if (pointer == headerLength) { //если считали заголовок
+                    //выйти, если изображение не содержит секретного слова
                     if (!isContainsSecret()) return null;
 
-//                    int params = ((ByteBuffer) ByteBuffer.wrap(imageBits.get(48, 80).toByteArray()).position(0)).getInt();
-//                    numberOfBit = params >> 29 & 0x07;
-//                    length = params & 0x1FFFFFFF;
                     numberOfBit = getNumberOfBit();
                     length = getLength();
-                } else if (pointer == length) {
-                    return getImageData();
-//                    return imageBits.get(Config.HEADER_LENGTH * 8, length).toByteArray();
+                } else if (pointer == length) { //если считали все содержимое
+                    return getFileData();
                 }
             }
         }
         return null;
     }
 
+    /**
+     * Извлекает содержимое из переданной составляющей,
+     * и записывает извлеченные биты в imageBits.
+     *
+     * @param colorPart Составляющая пикселя. Например: Red, Green или Blue.
+     */
     private void extractBits(int colorPart) {
         if (pointer == length) return;
 
@@ -76,14 +86,11 @@ public class EjectHandler {
                 .getInt() & 0x1FFFFFFF;
     }
 
-    private byte[] getImageData() {
+    private byte[] getFileData() {
         return imageBits.get(Config.HEADER_LENGTH * 8, length).toByteArray();
     }
 
     private boolean isContainsSecret() {
-        if (Arrays.equals(Config.SECRET_TAG, imageBits.get(0, 48).toByteArray())) {
-            return true;
-        }
-        return false;
+        return Arrays.equals(Config.SECRET_TAG, imageBits.get(0, 48).toByteArray());
     }
 }

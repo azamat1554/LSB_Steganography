@@ -16,7 +16,7 @@ import java.net.URISyntaxException;
 import static ru.puredelight.gui.Utilities.setConstraints;
 
 /**
- * Класс панели, которая формирует ГПИ для обработки текста.
+ * Класс панели, которая формирует ГПИ для извлечения сообщения из изображения.
  *
  * @author Azamat Abidokov
  */
@@ -52,6 +52,7 @@ public class EjectPanel extends JPanel {
 
         secretImage = Utilities.getImage(InjectPanel.class.getClassLoader()
                 .getResourceAsStream("images/defaultImg.jpg"));
+        secretIsImage = true;
 
         secretLbl.setHorizontalTextPosition(JLabel.CENTER);
         secretLbl.setVerticalTextPosition(JLabel.TOP);
@@ -95,7 +96,7 @@ public class EjectPanel extends JPanel {
                 extension = Utilities.getExtension(fileData);
                 if (Utilities.supportImageType(fileData)) {
                     secretIsImage = true;
-                    secretImage = Utilities.getImage(fileData); //new ImageIcon(imageData).getImage();
+                    secretImage = Utilities.getImage(fileData);
                     secretLbl.setIcon(Utilities.getScaledImage(secretLbl, secretImage));
                 } else {
                     secretIsImage = false;
