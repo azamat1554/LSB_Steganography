@@ -1,8 +1,9 @@
 package ru.puredelight.gui;
 
 import ru.puredelight.handlers.Config;
-import ru.puredelight.handlers.InjectHandler;
+import ru.puredelight.handlers.EmbedHandler;
 import ru.puredelight.utils.ImageFilter;
+import ru.puredelight.utils.Utilities;
 
 import javax.imageio.ImageIO;
 import javax.swing.*;
@@ -14,14 +15,14 @@ import java.awt.image.DataBufferByte;
 import java.io.File;
 import java.io.IOException;
 
-import static ru.puredelight.gui.Utilities.setConstraints;
+import static ru.puredelight.utils.Utilities.setConstraints;
 
 /**
  * Класс панели, которая формирует ГПИ для внедрения сообщения в изображение.
  *
  * @author Azamat Abidokov
  */
-public class InjectPanel extends JPanel {
+public class EmbedPanel extends JPanel {
     private JLabel emptyImgLbl;
     private JLabel secretLbl;
     private JLabel fillImgLbl;
@@ -42,7 +43,7 @@ public class InjectPanel extends JPanel {
     private String extension;
     private boolean secretIsImage = true;
 
-    public InjectPanel() {
+    public EmbedPanel() {
         emptyImgLbl = new JLabel("Пустой контейнер");
         secretLbl = new JLabel("Секрет");
         fillImgLbl = new JLabel("Заполненный контейнер");
@@ -63,7 +64,7 @@ public class InjectPanel extends JPanel {
         addComponents();
         eventHandlers();
 
-        defaultImage = Utilities.getImage(InjectPanel.class.getClassLoader()
+        defaultImage = Utilities.getImage(EmbedPanel.class.getClassLoader()
                 .getResourceAsStream("images/defaultImg.jpg"));
 
         emptyImage = defaultImage;
@@ -154,7 +155,7 @@ public class InjectPanel extends JPanel {
 
 
                 if (secretFile != null) {
-                    fillImage = new InjectHandler().inject(emptyImage, secretFile, slider.getValue());
+                    fillImage = new EmbedHandler().inject(emptyImage, secretFile, slider.getValue());
                     fillImgLbl.setIcon(Utilities.getScaledImage(emptyImgLbl, fillImage));
 
                     saveImgBtn.setEnabled(false);
@@ -201,7 +202,7 @@ public class InjectPanel extends JPanel {
                     secretLbl.setText("<html>Секретный файл:<br><br><i>" + file.getName() + "</i></html>");
                 }
 
-                fillImage = new InjectHandler().inject(emptyImage, file, slider.getValue());
+                fillImage = new EmbedHandler().inject(emptyImage, file, slider.getValue());
                 fillImgLbl.setIcon(Utilities.getScaledImage(emptyImgLbl, fillImage));
 
                 saveImgBtn.setEnabled(true);
@@ -221,7 +222,7 @@ public class InjectPanel extends JPanel {
                     return;
                 }
 
-                fillImage = new InjectHandler().inject(emptyImage, secretFile, slider.getValue());
+                fillImage = new EmbedHandler().inject(emptyImage, secretFile, slider.getValue());
                 fillImgLbl.setIcon(Utilities.getScaledImage(emptyImgLbl, fillImage));
             }
         });

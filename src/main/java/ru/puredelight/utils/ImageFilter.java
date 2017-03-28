@@ -1,7 +1,5 @@
 package ru.puredelight.utils;
 
-import ru.puredelight.gui.Utilities;
-
 import javax.swing.filechooser.FileFilter;
 import java.io.File;
 

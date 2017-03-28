@@ -1,4 +1,4 @@
-package ru.puredelight.gui;
+package ru.puredelight.utils;
 
 
 import org.apache.tika.Tika;
@@ -21,7 +21,7 @@ import java.util.BitSet;
  */
 public class Utilities {
     /* Устанавливает указанные ограничения*/
-    static GridBagConstraints setConstraints(GridBagConstraints gbc, int gridx, int gridy, int gridwidth,
+    public static GridBagConstraints setConstraints(GridBagConstraints gbc, int gridx, int gridy, int gridwidth,
                                              int gridheight, double weightx, double weighty) {
         gbc.gridx = gridx;
         gbc.gridy = gridy;

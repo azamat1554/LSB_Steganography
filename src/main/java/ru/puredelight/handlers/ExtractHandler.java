@@ -11,7 +11,7 @@ import java.util.BitSet;
  *
  * @author Azamat Abidokov
  */
-public class EjectHandler {
+public class ExtractHandler {
     //указатель на текущую позицию в извлекаемом сообщении
     private int pointer;
     //биты извлекаемого сообщения
@@ -52,9 +52,10 @@ public class EjectHandler {
                     //выйти, если изображение не содержит секретного слова
                     if (!isContainsSecret()) return null;
 
+                    pointer = headerLength;
                     numberOfBit = getNumberOfBit();
                     length = getLength();
-                } else if (pointer == length) { //если считали все содержимое
+                } else if (pointer >= length) { //если считали все содержимое
                     return getFileData();
                 }
             }

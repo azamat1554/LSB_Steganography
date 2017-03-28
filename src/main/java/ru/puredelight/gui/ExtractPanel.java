@@ -1,7 +1,8 @@
 package ru.puredelight.gui;
 
-import ru.puredelight.handlers.EjectHandler;
+import ru.puredelight.handlers.ExtractHandler;
 import ru.puredelight.utils.ImageFilter;
+import ru.puredelight.utils.Utilities;
 
 import javax.swing.*;
 import java.awt.*;
@@ -11,16 +12,15 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.URISyntaxException;
 
-import static ru.puredelight.gui.Utilities.setConstraints;
+import static ru.puredelight.utils.Utilities.setConstraints;
 
 /**
  * Класс панели, которая формирует ГПИ для извлечения сообщения из изображения.
  *
  * @author Azamat Abidokov
  */
-public class EjectPanel extends JPanel {
+public class ExtractPanel extends JPanel {
     private JLabel secretLbl;
     private JButton loadImgBtn;
     private JButton saveImgBtn;
@@ -33,7 +33,7 @@ public class EjectPanel extends JPanel {
     private String extension;
     private boolean secretIsImage;
 
-    public EjectPanel() {
+    public ExtractPanel() {
         secretLbl = new JLabel("Секретное сообщение");
         loadImgBtn = new JButton("Выбрать контейнер");
         saveImgBtn = new JButton("Сохранить");
@@ -50,7 +50,7 @@ public class EjectPanel extends JPanel {
         saveImgBtn.setFont(font);
         saveImgBtn.setEnabled(false);
 
-        secretImage = Utilities.getImage(InjectPanel.class.getClassLoader()
+        secretImage = Utilities.getImage(EmbedPanel.class.getClassLoader()
                 .getResourceAsStream("images/defaultImg.jpg"));
         secretIsImage = true;
 
@@ -75,7 +75,7 @@ public class EjectPanel extends JPanel {
         loadSavePnl.add(loadImgBtn);
         loadSavePnl.add(saveImgBtn);
 
-        //add components on EjectPanel
+        //add components on ExtractPanel
         gbc.insets = new Insets(2, 2, 2, 2);
         add(loadSavePnl, setConstraints(gbc, 0, 0, 1, 1, 0, 0));
         add(secretLbl, setConstraints(gbc, 0, 1, 1, 1, 1, 1));
@@ -86,7 +86,7 @@ public class EjectPanel extends JPanel {
             if (fileChooser.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
                 fillImage = Utilities.getImage(fileChooser.getSelectedFile());
 
-                fileData = new EjectHandler().eject(fillImage);
+                fileData = new ExtractHandler().eject(fillImage);
                 if (fileData == null) {
                     JOptionPane.showMessageDialog(this,
                             "В этом файле, нет секретного содержимого.");

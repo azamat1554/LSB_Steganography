@@ -1,6 +1,6 @@
 package ru.puredelight.handlers;
 
-import ru.puredelight.gui.Utilities;
+import ru.puredelight.utils.Utilities;
 
 import java.awt.*;
 import java.awt.image.*;
@@ -14,7 +14,7 @@ import java.util.BitSet;
  *
  * @author Azamat Abidokov
  */
-public class InjectHandler {
+public class EmbedHandler {
     //указатель на текущую позицию в секретном сообщении
     private int pointer;
     //биты встраиваемого сообщения

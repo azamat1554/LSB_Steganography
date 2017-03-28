@@ -17,9 +17,9 @@ public class MainWindow extends JFrame {
 
         JTabbedPane jtp = new JTabbedPane();
 
-        InjectPanel injectPanel = new InjectPanel();
-        jtp.addTab("Внедрение", injectPanel);
-        jtp.addTab("Извлечение", new EjectPanel());
+        EmbedPanel embedPanel = new EmbedPanel();
+        jtp.addTab("Внедрение", embedPanel);
+        jtp.addTab("Извлечение", new ExtractPanel());
         add(jtp);
 
         addWindowListener(new WindowAdapter() {
