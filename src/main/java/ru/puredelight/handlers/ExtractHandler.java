@@ -52,7 +52,6 @@ public class ExtractHandler {
                     //выйти, если изображение не содержит секретного слова
                     if (!isContainsSecret()) return null;
 
-                    pointer = headerLength;
                     numberOfBit = getNumberOfBit();
                     length = getLength();
                 } else if (pointer >= length) { //если считали все содержимое
